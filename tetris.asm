@@ -67,6 +67,8 @@
     LINE_FULL DW 0
     
     MILIS DB 0
+    
+    SCORE DW 0
 
 
 MACRO PUSH_ALL
@@ -298,7 +300,9 @@ END_INIT:
     
     MOV  AH, 2CH
     INT  21H      ;?¦¦ RETURN SECONDS IN DH.
-    MOV  MILIS, DH  ;?¦¦ IF SECONDS ARE THE SAME...
+    MOV  MILIS, DH  ;?¦¦ IF SECONDS ARE THE SAME... 
+    
+    CALL PRINT_SCORE
 MAIN_LOOP: 
     
     MOV  AH, 2CH
@@ -314,6 +318,7 @@ MAIN_LOOP:
     MOV [BLOCK_PLACED], 0
 NO_NEW_BLOCK:    
     CALL DRAW_MAP
+    CALL PRINT_SCORE
     
     MOV AH, 1
     INT 16H
@@ -703,6 +708,7 @@ CHECKING_LINE_LABEL:
 CLEANING_LINE:
     PUSH_ALL
     CALL CLEAN_LINE
+    ADD [SCORE], 10
     POP_ALL    
 LINE_CLEANED:
     MOV CX, AX
@@ -765,3 +771,41 @@ LINE_EMPTY:
     RET
 ENDP   
 
+
+PRINT_SCORE PROC
+    MOV AH, 02 ; set cursor option
+    MOV BH, 00 ; page 0
+    MOV DL, 02
+    MOV DH, 02
+    INT 10H   
+    MOV CX, 0 
+    MOV DX, 0
+    MOV AX, [SCORE]
+    CMP AX, 0 
+    JE PRINT_ZERO
+PRINTLOOP:   
+    CMP AX, 0 
+    JE PRINTLOOPFINAL  
+    MOV BX, 10   
+    DIV BX     
+    PUSH DX    
+    INC CX      
+    MOV DX, 0 
+    JMP PRINTLOOP 
+PRINTLOOPFINAL:  
+    CMP CX, 0 
+    JE ENDPROC   
+    POP DX 
+    ADD DX, 48 
+    MOV AH, 02h 
+    INT 21h      
+    DEC CX 
+    JMP PRINTLOOPFINAL
+PRINT_ZERO:
+    MOV DX, '0' 
+    MOV AH, 02h 
+    INT 21h
+    RET    
+ENDPROC:
+    RET
+PRINT_SCORE ENDP 
