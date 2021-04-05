@@ -25,10 +25,20 @@
                      DW 0, 1, 11, 21
                      DW 0, 8, 9, 10
                      
+    FLIPPED_L_OBJECT_INDEXES DW 0, 10, 20, 19
+                             DW 0, 10, 11, 12
+                             DW 0, 1, 10, 20
+                             DW 0, 1, 2, 12
+                     
     Z_OBJECT_INDEXES DW 0, 10, 11, 21
                      DW 0, 1, 9, 10
                      DW 0, 10, 11, 21
                      DW 0, 1, 9, 10
+                     
+    N_OBJECT_INDEXES DW 0, 10, 9, 19
+                     DW 0, 1, 11, 12
+                     DW 0, 10, 9, 19
+                     DW 0, 1, 11, 12
                      
     T_OBJECT_INDEXES DW 0, 1, 2, 11 
                      DW 0, 9, 10, 20
@@ -547,7 +557,7 @@ AGAIN:
     JE AGAIN
     MOV [ACTIVE_OBJECT_COLOR], AX
          
-    GET_RANDOM_NUMBER_BETWEEN 0, 5
+    GET_RANDOM_NUMBER_BETWEEN 0, 6
     
     CMP [RAND_NUM], 0 
     JE T_BLOCK 
@@ -559,6 +569,11 @@ AGAIN:
     JE LINE_BLOCK
     CMP [RAND_NUM], 4 
     JE CUBE_BLOCK
+    CMP [RAND_NUM], 5 
+    JE FLIPPED_L_BLOCK
+    CMP [RAND_NUM], 6 
+    JE N_BLOCK
+    
 
 T_BLOCK:
     MOV BX, 0
@@ -586,6 +601,20 @@ L_INDEXES_UPDATED:
     GENERATE_BLOCK L_OBJECT_INDEXES
     JMP END_GENERATE 
     
+FLIPPED_L_BLOCK:
+    MOV BX, 0
+FLIPPED_L_UPDATE_INDEXES:
+    CMP BX, 32
+    JE FLIPPED_L_INDEXES_UPDATED
+    MOV AX, [FLIPPED_L_OBJECT_INDEXES + BX]
+    MOV [ACTIVE_OBJECT_INDEXES + BX], AX 
+    ADD BX, 2
+    JMP FLIPPED_L_UPDATE_INDEXES 
+FLIPPED_L_INDEXES_UPDATED:            
+    GENERATE_BLOCK L_OBJECT_INDEXES
+    JMP END_GENERATE    
+    
+    
 Z_BLOCK:
     MOV BX, 0
 Z_UPDATE_INDEXES:
@@ -597,7 +626,20 @@ Z_UPDATE_INDEXES:
     JMP Z_UPDATE_INDEXES 
 Z_INDEXES_UPDATED:            
     GENERATE_BLOCK Z_OBJECT_INDEXES
-    JMP END_GENERATE 
+    JMP END_GENERATE
+
+N_BLOCK:
+    MOV BX, 0
+N_UPDATE_INDEXES:
+    CMP BX, 32
+    JE N_INDEXES_UPDATED
+    MOV AX, [N_OBJECT_INDEXES + BX]
+    MOV [ACTIVE_OBJECT_INDEXES + BX], AX 
+    ADD BX, 2
+    JMP N_UPDATE_INDEXES 
+N_INDEXES_UPDATED:            
+    GENERATE_BLOCK N_OBJECT_INDEXES
+    JMP END_GENERATE     
     
 LINE_BLOCK:
     MOV BX, 0
